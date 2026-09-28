@@ -391,7 +391,10 @@ document.getElementById("submitBtn").addEventListener("click",()=>{
  checked.forEach(x=>{const d=+x.dataset.dim; totals[d].sum+=+x.value; totals[d].count++});
  const scores=totals.map(x=>+(x.sum/x.count).toFixed(2));
  const indexed=scores.map((s,i)=>({s,i})).sort((a,b)=>a.s-b.s || a.i-b.i);
- const lowIdx=[indexed[0].i,indexed[1].i];
+ // Identify the two lowest score levels; include all dimensions tied at those levels.
+ const uniqueScores=[...new Set(indexed.map(x=>x.s))];
+ const cutoff=uniqueScores.length>1 ? uniqueScores[1] : uniqueScores[0];
+ const lowIdx=indexed.filter(x=>x.s<=cutoff).map(x=>x.i);
  const p=chooseProfile(scores);
 
  document.getElementById("profileTitle").textContent=p.title;
@@ -406,7 +409,7 @@ document.getElementById("submitBtn").addEventListener("click",()=>{
  radarChart=new Chart(ctx,{
   type:"radar",
   data:{
-   labels:dimensions.map(d=>d.short),
+   labels:dimensions.map(d=>d.name),
    datasets:[{
     label:"Maturity score",data:scores,
     backgroundColor:"rgba(72,214,181,.16)",borderColor:"#48d6b5",
